@@ -1,16 +1,18 @@
 'use client'
-import React, {useState, MouseEvent} from 'react';
+import React, {useState, MouseEvent, useEffect, useCallback} from 'react';
 import {  rem, Popover } from '@mantine/core';
 import {TimeInput, DatePicker, DatesRangeValue} from '@mantine/dates';
 import { addDays, format } from "date-fns";
 import { IconChevronDown } from '@tabler/icons-react';
 import {useFormattedState} from "@/app/CustomHooks";
+import {debounce} from 'lodash';
 
 export function DateTimeRange() {
     const [dates, setDates] = useState<Date[]>([new Date(), addDays(new Date(), 1)]);
     const [pickUpTime, setPickUpTime] = useState(format(new Date(), 'HH:mm'));
     const [dropOffTime, setDropOffTime] = useState(format(new Date(), 'HH:mm'));
     const [showDateTimeRangePicker, setShowDateTimeRangePicker] = useState(false);
+    const [debouncedInput, setDebouncedInput] = useState('');
     const [labelDateTimeRange, setLabelDateTimeRange] = useFormattedState([dates[0], dates[1]]);
 
     const handleShowPicker = (event: MouseEvent<HTMLInputElement>) => {
@@ -28,6 +30,23 @@ export function DateTimeRange() {
         isDateValid(pickUpDate) && setDates(prevDatesState => [new Date(pickUpDate), prevDatesState[1]])
         isDateValid(dropOffDate) && setDates(prevDatesState => [prevDatesState[0], new Date(dropOffDate)])
     }
+
+    const debouncedDateTimeInputChange = useCallback(debounce(handleDateTimeInputChange, 500), []);
+
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setDebouncedInput(event.target.value);
+        debouncedDateTimeInputChange(event);
+    }
+
+    useEffect(() => {
+        setDebouncedInput(labelDateTimeRange);
+    }, [labelDateTimeRange]);
+
+    useEffect(() => {
+        return () => {
+            debouncedDateTimeInputChange.cancel();
+        };
+    }, [debouncedDateTimeInputChange]);
 
     const handleDateRangeChange = (dates: Date[]) => {
         setDates(dates);
@@ -50,9 +69,9 @@ export function DateTimeRange() {
                 <input
                     className={'w-full'}
                     type="text"
-                    value={labelDateTimeRange}
+                    value={debouncedInput}
                     onClick={() => setShowDateTimeRangePicker(true)}
-                    onChange={handleDateTimeInputChange}
+                    onChange={handleInputChange}
                 />
             </Popover.Target>
             <Popover.Dropdown>

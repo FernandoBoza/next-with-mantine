@@ -15,11 +15,13 @@
     "@tabler/icons-react": "^2.46.0",
     "date-fns": "^3.3.1",
     "dayjs": "^1.11.10",
+    "lodash": "^4.17.21",
     "next": "14.1.0",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.202",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

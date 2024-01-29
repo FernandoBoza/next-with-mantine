@@ -7,7 +7,7 @@ const useFormattedState = (initialValue: string[] | Date[]): [string, Dispatch<S
     const isDateValid = (dateStr: Date | string | null) => dateStr && String(new Date(dateStr)) !== 'Invalid Date'
     const formatForLabel = (dates: Date[] | string[]) => {
         const sortedDates = [...dates].map(date => new Date(date)).sort(compareAsc);
-        return sortedDates && isDateValid(sortedDates[0]) && isDateValid(sortedDates[1]) ? `${format(new Date(sortedDates[0]), 'EEE, MMM dd, yyyy')} - ${format(new Date(sortedDates[1]), 'EEE, MMM dd, yyyy')}` : '';
+        return sortedDates && isDateValid(sortedDates[0]) && isDateValid(sortedDates[1]) ? `${format(sortedDates[0], 'EEE, MMM dd, yyyy')} - ${format(sortedDates[1], 'EEE, MMM dd, yyyy')}` : '';
     };
     const formattedState = formatForLabel(state);
 
