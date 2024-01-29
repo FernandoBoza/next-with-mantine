@@ -10,7 +10,6 @@ export function DateTimeRange() {
     const [pickUpTime, setPickUpTime] = useState(format(new Date(), 'HH:mm'));
     const [dropOffTime, setDropOffTime] = useState(format(new Date(), 'HH:mm'));
     const [showDateTimeRangePicker, setShowDateTimeRangePicker] = useState(false);
-    const [labelDateTimeRange, setLabelDateTimeRange] = useState<string>('');
 
     const handleShowPicker = (event: MouseEvent<HTMLInputElement>) => {
         const target = event.target as HTMLInputElement;
@@ -19,25 +18,37 @@ export function DateTimeRange() {
 
     const formatForLabel = (date: Date | null) => date ? `${format(date, 'EEE, MMM dd, yyyy')}` : '';
 
+    const [labelDateTimeRange, setLabelDateTimeRange] = useState<string>(`${formatForLabel(dates[0])} - ${formatForLabel(dates[1])}`);
+
     const formatDateAndTime = (date: Date | null, time: string) => (date && time) && format(`${date.toLocaleDateString()} ${time}`, 'yyyy-MM-dd h:mm a')
 
     const pickerControl = <IconChevronDown style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
 
-    const handleDateTimeInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const [pickUpDate, dropOffDate] = event.target.value.split(' - ')
-        // setLabelDateTimeRange(event.target.value)
+    const handleDateTimeInputChange = ({target: {value}}: React.ChangeEvent<HTMLInputElement>) => {
+        setLabelDateTimeRange(value)
+        const [pickUpDate, dropOffDate] = value.split(' - ')
+        const isDateValid = (dateStr: string) => String(new Date(dateStr)) !== 'Invalid Date'
+
+        isDateValid(pickUpDate) && setDates(prevDatesState => [new Date(pickUpDate), prevDatesState[1]])
+        isDateValid(dropOffDate) && setDates(prevDatesState => [prevDatesState[0], new Date(dropOffDate)])
+
     }
 
-    useEffect(() => {
+    const handleDateRangeChange = (dates: [Date | null, Date | null]) => {
+        setDates(dates);
         setLabelDateTimeRange(`${formatForLabel(dates[0])} - ${formatForLabel(dates[1])}`)
-        console.log(!dates[1] && showDateTimeRangePicker)
-        // if (dates[1] && showDateTimeRangePicker){
-        //     setShowDateTimeRangePicker(false)
-        // }
-    }, [dates, showDateTimeRangePicker])
+        if (dates[0] !== null && dates[1] !== null) {
+            setShowDateTimeRangePicker(false);
+        }
+    }
+
+    const handleClosePopover = () => {
+        setLabelDateTimeRange(`${formatForLabel(dates[0])} - ${formatForLabel(dates[1])}`)
+        setShowDateTimeRangePicker(false);
+    }
 
     return (
-        <Popover opened={showDateTimeRangePicker} onChange={e => setShowDateTimeRangePicker(e)}  position="bottom" withArrow shadow="md" >
+        <Popover opened={showDateTimeRangePicker} onChange={handleClosePopover}  position="bottom" withArrow shadow="md" >
             <Popover.Target>
                 <input
                     className={'w-full'}
@@ -48,7 +59,7 @@ export function DateTimeRange() {
                 />
             </Popover.Target>
             <Popover.Dropdown>
-                <DatePicker type="range" value={dates} onChange={setDates} />
+                <DatePicker type="range" value={dates} onChange={handleDateRangeChange} />
                 <TimeInput
                     label="Pick up time"
                     value={pickUpTime}
