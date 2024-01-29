@@ -69,6 +69,14 @@ export function DateTimeRange({getDates}: DateTimeRangeType) {
 
     const chevronDown = <IconChevronDown style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
 
+    const handleTimeInputChange = ({target}: React.ChangeEvent<HTMLInputElement>) => {
+        const {id, value} = target;
+        id === 'pick-up-time' && setPickUpTime(value)
+        id === 'drop-off-time' && setDropOffTime(value)
+        getDates([formatDateAndTime(dates[0], pickUpTime), formatDateAndTime(dates[1], dropOffTime)])
+    };
+
+
     return (
         <Popover opened={showDateTimeRangePicker} onChange={handleClosePopover}  position="bottom" withArrow shadow="md" >
             <Popover.Target>
@@ -84,8 +92,9 @@ export function DateTimeRange({getDates}: DateTimeRangeType) {
                 <DatePicker type="range" value={dates as [Date, Date]} onChange={handleDateRangeChange as (value: DatesRangeValue) => void} />
                 <TimeInput
                     label="Pick up time"
+                    id='pick-up-time'
                     value={pickUpTime}
-                    onChange={({target}) => setPickUpTime(target?.value)}
+                    onChange={handleTimeInputChange}
                     onClick={handleShowPicker}
                     rightSection={chevronDown}
                     rightSectionPointerEvents="none"
@@ -93,8 +102,9 @@ export function DateTimeRange({getDates}: DateTimeRangeType) {
                 />
                 <TimeInput
                     label="Drop off time"
+                    id='drop-off-time'
                     value={dropOffTime}
-                    onChange={({target}) => setDropOffTime(target?.value)}
+                    onChange={handleTimeInputChange}
                     onClick={handleShowPicker}
                     rightSection={chevronDown}
                     rightSectionPointerEvents="none"

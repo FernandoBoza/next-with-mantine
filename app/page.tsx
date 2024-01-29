@@ -9,7 +9,6 @@ export default function Home() {
     const [dates, setDates] = useState<Date[]>([new Date(), addDays(new Date(), 1)]);
 
     const getDatesFromDateTimeRangeComponent = (dates: any) => {
-        console.log(dates)
         const sortedDates = [...dates].map(date => new Date(date)).sort(compareAsc);
         setDates(sortedDates)
     }
