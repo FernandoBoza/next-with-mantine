@@ -7,7 +7,11 @@ import { IconChevronDown } from '@tabler/icons-react';
 import {useFormattedState} from "@/app/CustomHooks";
 import {debounce} from 'lodash';
 
-export function DateTimeRange() {
+type DateTimeRangeType = {
+    getDates: (dates: (string | Date | null)[]) => void
+}
+
+export function DateTimeRange({getDates}: DateTimeRangeType) {
     const [dates, setDates] = useState<Date[]>([new Date(), addDays(new Date(), 1)]);
     const [pickUpTime, setPickUpTime] = useState(format(new Date(), 'HH:mm'));
     const [dropOffTime, setDropOffTime] = useState(format(new Date(), 'HH:mm'));
@@ -29,6 +33,7 @@ export function DateTimeRange() {
 
         isDateValid(pickUpDate) && setDates(prevDatesState => [new Date(pickUpDate), prevDatesState[1]])
         isDateValid(dropOffDate) && setDates(prevDatesState => [prevDatesState[0], new Date(dropOffDate)])
+        getDates([formatDateAndTime(new Date(pickUpDate), pickUpTime), formatDateAndTime(new Date(dropOffDate), dropOffTime)])
     }
 
     const debouncedDateTimeInputChange = useCallback(debounce(handleDateTimeInputChange, 500), []);
@@ -36,6 +41,20 @@ export function DateTimeRange() {
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setDebouncedInput(event.target.value);
         debouncedDateTimeInputChange(event);
+    }
+
+    const handleDateRangeChange = (dates: Date[]) => {
+        setDates(dates);
+        setLabelDateTimeRange(dates)
+        if (dates[0] !== null && dates[1] !== null) {
+            setShowDateTimeRangePicker(false);
+            getDates([formatDateAndTime(new Date(dates[0]), pickUpTime), formatDateAndTime(new Date(dates[1]), dropOffTime)])
+        }
+    }
+
+    const handleClosePopover = () => {
+        setLabelDateTimeRange(dates)
+        setShowDateTimeRangePicker(false);
     }
 
     useEffect(() => {
@@ -47,19 +66,6 @@ export function DateTimeRange() {
             debouncedDateTimeInputChange.cancel();
         };
     }, [debouncedDateTimeInputChange]);
-
-    const handleDateRangeChange = (dates: Date[]) => {
-        setDates(dates);
-        setLabelDateTimeRange(dates)
-        if (dates[0] !== null && dates[1] !== null) {
-            setShowDateTimeRangePicker(false);
-        }
-    }
-
-    const handleClosePopover = () => {
-        setLabelDateTimeRange(dates)
-        setShowDateTimeRangePicker(false);
-    }
 
     const chevronDown = <IconChevronDown style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
 
