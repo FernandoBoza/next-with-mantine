@@ -1,16 +1,9 @@
-'use client'
-import React, {useState, MouseEvent, useEffect, Dispatch, SetStateAction} from 'react';
+import React, {useState, MouseEvent} from 'react';
 import {  rem, Popover } from '@mantine/core';
-import {TimeInput, DatePicker, DateInput, DatesRangeValue} from '@mantine/dates';
+import {TimeInput, DatePicker, DatesRangeValue} from '@mantine/dates';
 import { format } from "date-fns";
 import { IconChevronDown } from '@tabler/icons-react';
-import { DateAndTimeType } from "@/app/page";
-
-type DateTimeRangeType = {
-    getDatesAndTime: Dispatch<SetStateAction<DateAndTimeType>>,
-    dates: Date[],
-    time: string[]
-}
+import {DateTimeRangeType, isDateValid} from "@/app/shared";
 
 export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType) {
     const [datesArray, setDatesArray] = useState(dates);
@@ -29,7 +22,6 @@ export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType)
     const handleDateTimeInputChange = ({target: {value}}: React.ChangeEvent<HTMLInputElement>) => {
         setLabelDateTimeRange(value)
         const [pickUpDate, dropOffDate] = value.split(' - ')
-        const isDateValid = (dateStr: string) => String(new Date(dateStr)) !== 'Invalid Date'
 
         isDateValid(pickUpDate) && setDatesArray(prevDatesState => [new Date(pickUpDate), prevDatesState[1]])
         isDateValid(dropOffDate) && setDatesArray(prevDatesState => [prevDatesState[0], new Date(dropOffDate)])
@@ -70,7 +62,7 @@ export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType)
         <Popover opened={showDateTimeRangePicker} onChange={handleClosePopover}  position="bottom" withArrow shadow="md" >
             <Popover.Target>
                 <input
-                    className={'w-full'}
+                    className={'w-full text-center border-2 border-black rounded-lg'}
                     type="text"
                     value={labelDateTimeRange}
                     onClick={() => setShowDateTimeRangePicker(true)}
