@@ -1,6 +1,5 @@
 import {Dispatch, SetStateAction} from "react";
-
-export const isDateValid = (dateStr: string) => String(new Date(dateStr)) !== 'Invalid Date'
+import {format} from "date-fns";
 
 export type DateTimeRangeType = {
     getDatesAndTime: Dispatch<SetStateAction<DateAndTimeType>>,
@@ -12,3 +11,7 @@ export type DateAndTimeType = {
     dates: Date[],
     time: string[]
 }
+
+export const isDateValid = (dateStr: string) => String(new Date(dateStr)) !== 'Invalid Date'
+
+export const formatForLabel = (date: Date | null) => date ? `${format(date, 'EEE, MMM dd, yyyy')}` : '';

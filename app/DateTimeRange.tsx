@@ -1,9 +1,8 @@
 import React, {useState, MouseEvent} from 'react';
 import {  rem, Popover } from '@mantine/core';
 import {TimeInput, DatePicker, DatesRangeValue} from '@mantine/dates';
-import { format } from "date-fns";
 import { IconChevronDown } from '@tabler/icons-react';
-import {DateTimeRangeType, isDateValid} from "@/app/shared";
+import {DateTimeRangeType, formatForLabel, isDateValid} from "@/app/shared";
 
 export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType) {
     const [datesArray, setDatesArray] = useState(dates);
@@ -15,16 +14,15 @@ export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType)
         typeof target.showPicker === 'function' && target.showPicker();
     }
 
-    const formatForLabel = (date: Date | null) => date ? `${format(date, 'EEE, MMM dd, yyyy')}` : '';
 
     const [labelDateTimeRange, setLabelDateTimeRange] = useState<string>(`${formatForLabel(datesArray[0])} - ${formatForLabel(datesArray[1])}`);
 
     const handleDateTimeInputChange = ({target: {value}}: React.ChangeEvent<HTMLInputElement>) => {
-        setLabelDateTimeRange(value)
         const [pickUpDate, dropOffDate] = value.split(' - ')
 
         isDateValid(pickUpDate) && setDatesArray(prevDatesState => [new Date(pickUpDate), prevDatesState[1]])
         isDateValid(dropOffDate) && setDatesArray(prevDatesState => [prevDatesState[0], new Date(dropOffDate)])
+        setLabelDateTimeRange(value)
 
         getDatesAndTime({dates: [new Date(pickUpDate), new Date(dropOffDate)], time: timeArray})
     }
@@ -67,6 +65,7 @@ export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType)
                     value={labelDateTimeRange}
                     onClick={() => setShowDateTimeRangePicker(true)}
                     onChange={handleDateTimeInputChange}
+                    onKeyDown={(e) => e.key === 'Enter' && setShowDateTimeRangePicker(prev => !prev)}
                 />
             </Popover.Target>
             <Popover.Dropdown>
@@ -79,7 +78,6 @@ export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType)
                     onClick={handleShowPicker}
                     rightSection={pickerControl}
                     rightSectionPointerEvents="none"
-
                 />
                 <TimeInput
                     label="Drop off time"
