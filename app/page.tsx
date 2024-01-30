@@ -29,6 +29,7 @@ export default function Home() {
     const [formattedLabel, setFormattedLabel] = useState<string>(formatDateAndTime(pickUpDateAndTime))
 
     useEffect(() => {
+        pickUpDateAndTime.dates = [...pickUpDateAndTime.dates].map(date => new Date(date)).sort((a, b) => a.getTime() - b.getTime())
         setFormattedLabel(formatDateAndTime(pickUpDateAndTime))
     }, [pickUpDateAndTime, setPickUpDateAndTime]);
 

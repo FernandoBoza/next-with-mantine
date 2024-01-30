@@ -1,19 +1,20 @@
-import React, {useState, MouseEvent} from 'react';
+import React, {useState, MouseEvent, useCallback, useEffect} from 'react';
 import {  rem, Popover } from '@mantine/core';
 import {TimeInput, DatePicker, DatesRangeValue} from '@mantine/dates';
 import { IconChevronDown } from '@tabler/icons-react';
 import {DateTimeRangeType, formatForLabel, isDateValid} from "@/app/shared";
+import {debounce} from 'lodash';
 
 export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType) {
     const [datesArray, setDatesArray] = useState(dates);
     const [timeArray, setTimeArray] = useState(time);
     const [showDateTimeRangePicker, setShowDateTimeRangePicker] = useState(false);
+    const [debouncedInput, setDebouncedInput] = useState('');
 
     const handleShowPicker = (event: MouseEvent<HTMLInputElement>) => {
         const target = event.target as HTMLInputElement;
         typeof target.showPicker === 'function' && target.showPicker();
     }
-
 
     const [labelDateTimeRange, setLabelDateTimeRange] = useState<string>(`${formatForLabel(datesArray[0])} - ${formatForLabel(datesArray[1])}`);
 
@@ -22,8 +23,10 @@ export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType)
 
         isDateValid(pickUpDate) && setDatesArray(prevDatesState => [new Date(pickUpDate), prevDatesState[1]])
         isDateValid(dropOffDate) && setDatesArray(prevDatesState => [prevDatesState[0], new Date(dropOffDate)])
-        setLabelDateTimeRange(value)
 
+        const sortedValue = [pickUpDate, dropOffDate].map(date => new Date(date)).sort((a, b) => a.getTime() - b.getTime())
+        const sortedLabel = sortedValue.map((formatForLabel)).join(' - ')
+        setLabelDateTimeRange(sortedLabel)
         getDatesAndTime({dates: [new Date(pickUpDate), new Date(dropOffDate)], time: timeArray})
     }
 
@@ -50,9 +53,29 @@ export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType)
     }
 
     const handleClosePopover = () => {
-        setLabelDateTimeRange(`${formatForLabel(datesArray[0])} - ${formatForLabel(datesArray[1])}`)
+        const sorted = [...datesArray].map(date => new Date(date)).sort((a, b) => a.getTime() - b.getTime())
+        setLabelDateTimeRange(`${formatForLabel(sorted[0])} - ${formatForLabel(sorted[1])}`)
         setShowDateTimeRangePicker(false);
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    //TODO: Fix this warning
+    const debouncedDateTimeInputChange = useCallback(debounce(handleDateTimeInputChange, 500), []);
+
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setDebouncedInput(event.target.value);
+        debouncedDateTimeInputChange(event);
+    }
+
+    useEffect(() => {
+        setDebouncedInput(labelDateTimeRange);
+    }, [labelDateTimeRange]);
+
+    useEffect(() => {
+        return () => {
+            debouncedDateTimeInputChange.cancel();
+        };
+    }, [debouncedDateTimeInputChange]);
 
     const pickerControl = <IconChevronDown style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
 
@@ -62,9 +85,9 @@ export function DateTimeRange({getDatesAndTime, dates, time}: DateTimeRangeType)
                 <input
                     className={'w-full text-center border-2 border-black rounded-lg'}
                     type="text"
-                    value={labelDateTimeRange}
+                    value={debouncedInput}
                     onClick={() => setShowDateTimeRangePicker(true)}
-                    onChange={handleDateTimeInputChange}
+                    onChange={handleInputChange}
                     onKeyDown={(e) => e.key === 'Enter' && setShowDateTimeRangePicker(prev => !prev)}
                 />
             </Popover.Target>
